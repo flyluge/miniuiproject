@@ -1,10 +1,10 @@
-	/** 
-	 * projectName: restaurantmanage 
-	 * fileName: TableMngDao.java 
-	 * packageName: com.epoint.dao 
-	 * date: 2019年9月9日上午10:23:53 
-	 * copyright(c)  LUGE
-	 */
+/** 
+ * projectName: restaurantmanage 
+ * fileName: TableMngDao.java 
+ * packageName: com.epoint.dao 
+ * date: 2019年9月9日上午10:23:53 
+ * copyright(c)  LUGE
+ */
 package com.epoint.dao;
 
 import com.epoint.domain.Tableinfo;

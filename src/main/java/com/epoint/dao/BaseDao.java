@@ -47,8 +47,7 @@ public interface BaseDao<T> {
 	 */
 	long findAllCount();
 	/**
-	 * 
-	 *通过主码查询单条数据
+	  *通过主码查询单条数据
 	 *@author: luge
 	 *@date: 2019年9月9日 下午6:36:09
 	 *@param id
@@ -63,6 +62,16 @@ public interface BaseDao<T> {
 	 * @return 查询结果封装bean
 	 */
 	T findOneBySql(String sql,Object... param);
+	/**
+	  *  条件查询单个
+	  *  通过sql语句查询单条数据  
+	 *@author: luge
+	 *@date: 2019年9月11日 上午9:51:35
+	 *@param sql sql语句
+	 *@param list 查询参数
+	 *@return 查询结果封装bean
+	 */
+	T findOneBySql2(String sql,List<Object> list);
 	/**
 	 *  查询所有
 	 * @return
@@ -80,13 +89,15 @@ public interface BaseDao<T> {
 	 */
 	List<T> findAllBySql(String sql,Object... param);
 	/**
-	 * 条件查询数量
-	 * @param t 封装条件的javabean
-	 * @param predate 
-	 * @param lastdate
-	 * @return
+	  * 条件查询多个
+	  * 通过sql语句条件查询多条数据
+	 *@author: luge
+	 *@date: 2019年9月11日 上午9:36:01
+	 *@param sql sql语句
+	 *@param param 查询条件
+	 *@return 查询结果封装List<Bean>
 	 */
-	long findAllCount(T t,String predate,String lastdate);
+	List<T> findAllBySql2(String sql,List<Object> list);
 	/**
 	 * 
 	 *条件查询数量
@@ -113,26 +124,6 @@ public interface BaseDao<T> {
 	 * @return
 	 */
 	List<T> findByPage(Integer currPage, Integer pageSize);
-	/**
-	 * 分页条件查询
-
-	
-	 */
-	/**
-	  * 分页条件查询
-	 * @author: luge
-	 * @date: 2019年9月9日 下午6:41:57
-	 * @param t 封装了查询条件的实体bean
-	 * @param pageIndex 页码(从1开始)
-	 * @param pageSize 每页数量
-	 * @param predate
-	 * @param lastdate
-	 * @param column 需要根据column列排序
-	 * @param asc 排序规则 asc:正序  desc:逆序
-	 * @return 条件分页数据
-	 * @return
-	 */
-	List<T> findByPage(T t, int pageIndex, int pageSize,String predate,String lastdate, String column, String asc);
 	/**
 	  *  条件分页查询
 	  *  通过sql语句与页码条件查询多条数据

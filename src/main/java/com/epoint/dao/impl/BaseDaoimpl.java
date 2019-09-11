@@ -17,18 +17,14 @@ import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 
 import com.epoint.dao.BaseDao;
-import com.epoint.utils.FormValidation;
 import com.epoint.utils.JDBCUtils;
 
 /**
- * Dao层实现类的父类,改类封装了基础的增删改查
+ * Dao层实现类的父类,改类封装了基础的增删改查 要求: 1.表名与对象名一致(不区分大小写) 2.数据名与属性名一致(区分大小写)
+ * 3.属性一定要有get/set方法 4.表一定要有主码
  * 
  * @author Luge
- * @param <T> 实体类型 要求: 
- * 			  1.表名与对象名一致(不区分大小写) 
- * 	          2.数据名与属性名一致(区分大小写) 
- *            3.属性一定要有get/set方法
- *            4.表一定要有主码
+ * @param <T> 实体类型
  */
 public class BaseDaoimpl<T> implements BaseDao<T> {
 	/**
@@ -54,7 +50,7 @@ public class BaseDaoimpl<T> implements BaseDao<T> {
 	/**
 	 * 数据表属性列表
 	 */
-	List<String> columns = new ArrayList<String>();
+	private List<String> columns = new ArrayList<String>();
 
 	public BaseDaoimpl() {
 		init();
@@ -80,7 +76,7 @@ public class BaseDaoimpl<T> implements BaseDao<T> {
 			if (r.next()) {
 				idname = (Serializable) r.getObject(4);
 			}
-			// 获取属性
+			// 获取数据库中的属性
 			ResultSet r2 = metaData.getColumns(conn.getCatalog(), null, tablename, null);
 			while (r2.next()) {
 				columns.add(r2.getString(4));
@@ -177,9 +173,9 @@ public class BaseDaoimpl<T> implements BaseDao<T> {
 	}
 
 	/**
-	 * 根据主码删除一条数据
+	  * 根据主码删除一条数据
 	 * 
-	 * @param t 带有主码的需要删除的数据
+	 * @param id 需要删除的数据的主码
 	 * @return true:删除成功 false:删除的数据不存在
 	 */
 	@Override
@@ -197,7 +193,7 @@ public class BaseDaoimpl<T> implements BaseDao<T> {
 	}
 
 	/**
-	 * 根据主码更新一条数据
+	  * 根据主码更新一条数据
 	 * 
 	 * @param t 带有主码的需要更新的数据
 	 * @return true:更新成功 false:更新的数据不存在
@@ -273,11 +269,6 @@ public class BaseDaoimpl<T> implements BaseDao<T> {
 		return null;
 	}
 
-	/**
-	 * 查询所有
-	 * 
-	 * @return
-	 */
 	@Override
 	public List<T> findAll() {
 		String sql = "select * from `" + tablename + "`";
@@ -290,7 +281,7 @@ public class BaseDaoimpl<T> implements BaseDao<T> {
 	}
 
 	/**
-	 * 分页查询
+	 * 分页查询 要求: currPage从1开始
 	 * 
 	 * @param currPage 当前页
 	 * @param pageSize 页面大小
@@ -317,9 +308,9 @@ public class BaseDaoimpl<T> implements BaseDao<T> {
 	@Override
 	public T findOneBySql(String sql, Object... param) {
 		try {
-			if(param==null) {
+			if (param == null) {
 				return queryRunner.query(JDBCUtils.getDruidConnection(), sql, new BeanHandler<T>(clazz));
-			}else {
+			} else {
 				return queryRunner.query(JDBCUtils.getDruidConnection(), sql, new BeanHandler<T>(clazz), param);
 			}
 		} catch (SQLException e) {
@@ -328,21 +319,34 @@ public class BaseDaoimpl<T> implements BaseDao<T> {
 		return null;
 	}
 
+	@Override
+	public T findOneBySql2(String sql, List<Object> list) {
+		Object[] obj = convertListToObj(list);
+		return findOneBySql(sql, obj);
+	}
+
 	/**
 	 * 通过sql语句条件查询
 	 */
 	@Override
 	public List<T> findAllBySql(String sql, Object... obj) {
 		try {
-			if(obj==null) {
+			if (obj == null) {
 				return (List<T>) queryRunner.query(JDBCUtils.getDruidConnection(), sql, new BeanListHandler<T>(clazz));
-			}else {
-				return (List<T>) queryRunner.query(JDBCUtils.getDruidConnection(), sql, new BeanListHandler<T>(clazz),obj);
+			} else {
+				return (List<T>) queryRunner.query(JDBCUtils.getDruidConnection(), sql, new BeanListHandler<T>(clazz),
+						obj);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	@Override
+	public List<T> findAllBySql2(String sql, List<Object> list) {
+		Object[] obj = convertListToObj(list);
+		return findAllBySql(sql, obj);
 	}
 
 	@Override
@@ -353,9 +357,9 @@ public class BaseDaoimpl<T> implements BaseDao<T> {
 		int index = (currPage - 1) * pageSize;
 		sql += " limit " + index + "," + pageSize;
 		try {
-			if(obj==null) {
+			if (obj == null) {
 				return (List<T>) queryRunner.query(JDBCUtils.getDruidConnection(), sql, new BeanListHandler<T>(clazz));
-			}else {
+			} else {
 				return (List<T>) queryRunner.query(JDBCUtils.getDruidConnection(), sql, new BeanListHandler<T>(clazz),
 						obj);
 			}
@@ -372,102 +376,12 @@ public class BaseDaoimpl<T> implements BaseDao<T> {
 	}
 
 	@Override
-	public List<T> findByPage(T t, int pageIndex, int pageSize, String predate, String lastdate, String column,
-			String asc) {
-		StringBuilder sql = new StringBuilder("select * from " + tablename + " where 1=1 ");
-		// 创建有序列表 存存查询条件
-		List<Object> qlist = new ArrayList<Object>();
-		for (int i = 0; i < fields.length; i++) {
-			// 获取get方法并实现
-			String attr = fields[i].getName();
-			String method = "get" + attr.substring(0, 1).toUpperCase() + attr.substring(1, attr.length());
-			try {
-				Object obj = clazz.getMethod(method).invoke(t);
-				// 非空验证
-				if (FormValidation.verifyNull(obj)) {
-					sql.append(" and " + attr + " like ?");
-					qlist.add("%" + obj + "%");
-				}
-				if ("java.util.Date".equals(fields[i].getGenericType().getTypeName())) {
-					if (FormValidation.verifyNull(predate)) {
-						sql.append(" and " + attr + " >= ?");
-						qlist.add(predate);
-					}
-					if (FormValidation.verifyNull(lastdate)) {
-						sql.append(" and " + attr + " <= ?");
-						qlist.add(lastdate);
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		if (FormValidation.verifyNull(column, asc)) {
-			sql.append(" Order by " + column + " " + asc);
-		}
-		sql.append(" limit ?,?");
-		pageIndex = (pageIndex - 1) * pageSize;
-		qlist.add(pageIndex);
-		qlist.add(pageSize);
-		// 将qlist查询条件转为Object集合
-		Object[] obj = new Object[qlist.size()];
-		for (int i = 0; i < obj.length; i++) {
-			obj[i] = qlist.get(i);
-		}
+	public long findAllCount(String sql, Object... obj) {
 		try {
-			if (qlist.size() == 0) {
-				return queryRunner.query(JDBCUtils.getDruidConnection(), sql.toString(), new BeanListHandler<T>(clazz));
+			if (obj == null) {
+				return queryRunner.query(JDBCUtils.getDruidConnection(), sql, new ScalarHandler<Long>());
 			} else {
-				return queryRunner.query(JDBCUtils.getDruidConnection(), sql.toString(), new BeanListHandler<T>(clazz),
-						obj);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	@Override
-	public long findAllCount(T t, String predate, String lastdate) {
-		StringBuilder sql = new StringBuilder("select count(1) from " + tablename + " where 1=1 ");
-		// 创建有序列表 存存查询条件
-		List<Object> qlist = new ArrayList<Object>();
-		for (int i = 0; i < fields.length; i++) {
-			// 获取get方法并实现
-			String attr = fields[i].getName();
-			String method = "get" + attr.substring(0, 1).toUpperCase() + attr.substring(1, attr.length());
-			try {
-				Object obj = clazz.getMethod(method).invoke(t);
-				// 非空验证
-				if (FormValidation.verifyNull(obj)) {
-					sql.append(" and " + attr + " like ?");
-					qlist.add("%" + obj + "%");
-				}
-				if ("java.util.Date".equals(fields[i].getGenericType().getTypeName())) {
-					if (FormValidation.verifyNull(predate)) {
-						sql.append(" and " + attr + " >= ?");
-						qlist.add(predate);
-					}
-					if (FormValidation.verifyNull(lastdate)) {
-						sql.append(" and " + attr + " <= ?");
-						qlist.add(lastdate);
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		// 将qlist查询条件转为Object集合
-		Object[] obj = new Object[qlist.size()];
-		for (int i = 0; i < obj.length; i++) {
-			obj[i] = qlist.get(i);
-		}
-		try {
-			if (qlist.size() == 0) {
-				return queryRunner.query(JDBCUtils.getDruidConnection(), sql.toString(), new ScalarHandler<Long>());
-			} else {
-				return queryRunner.query(JDBCUtils.getDruidConnection(), sql.toString(), new ScalarHandler<Long>(),
-						obj);
+				return queryRunner.query(JDBCUtils.getDruidConnection(), sql, new ScalarHandler<Long>(), obj);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -481,17 +395,4 @@ public class BaseDaoimpl<T> implements BaseDao<T> {
 		return findAllCount(sql, obj);
 	}
 
-	@Override
-	public long findAllCount(String sql, Object... obj) {
-		try {
-			if(obj==null) {
-				return queryRunner.query(JDBCUtils.getDruidConnection(), sql, new ScalarHandler<Long>());
-			}else {
-				return queryRunner.query(JDBCUtils.getDruidConnection(), sql, new ScalarHandler<Long>(), obj);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace(); 
-		}
-		return 0;
-	}
 }
