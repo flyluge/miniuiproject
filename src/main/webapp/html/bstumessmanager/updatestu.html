@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>学生信息修改页面</title>
+<script src="../../scripts/boot.js" type="text/javascript"></script>
+</head>
+<style type="text/css">
+html, body {
+	padding: 0;
+	margin: 0;
+	border: 0;
+	height: 100%;
+	overflow: hidden;
+}
+</style>
+</head>
+<body>
+	<form id="updateform" method="post">
+		<div style="padding-bottom: 20px;"></div>
+		<div style="padding: 15px;">
+			<input style="width:250px" name="stuid"
+						class="mini-hidden" required="true">
+			<input style="width:250px" name="totalscore"
+						class="mini-hidden" required="true">
+			<table style=" width: 100%;">
+				<tr>
+					<td style="width:80px">姓名</td>
+					<td style="width:150px"><input name="stuname" class="mini-textbox"
+						required="true" emptyText="请输入姓名" readonly="readonly"></input></td>
+					<td style="width:80px">入学日期：</td>
+					<td><input name="adddate" class="mini-datepicker"
+						required="true" allowInput="false" readonly="readonly"></input></td>
+				</tr>
+				<tr>
+					<td style="width:80px">专业：</td>
+					<td style="width:150px"><input name="profession" class="mini-combobox"
+						url="data/profession.json" valueField="id" textField="text"
+						required="true" value="1"></input></td>
+					<td style="width:80px">性别：</td>
+					<td style="width:150px">
+						<input class="mini-radiobuttonlist" name="sex" textField="text" valueField="id" value="1"
+						    url="data/sex.json"  readonly="readonly"></input>
+					</td>
+				</tr>
+				<tr>
+					<td style="width:80px">身份证号:</td>
+					<td colspan="3"><input style="width:440px" name="idnum"
+						class="mini-textbox" emptyText="请输入身份证号" required="true" readonly="readonly"></input></td>
+				</tr>
+				<tr>
+					<td style="width:80px">其他说明:</td>
+					<td colspan="3"><input name="note"
+						class="mini-textarea" emptyText="请输入其他说明" style="width:440px" readonly="readonly"></input></td>
+				</tr>
+			</table>
+		</div>
+		<div style="text-align: center; padding: 10px;">
+			<a class="mini-button" onclick="update"
+				style="width: 60px; margin-right: 20px;">确定</a>
+		</div>
+	</form>
+	<script type="text/javascript">
+		$(function() {
+			mini.parse();
+		})
+		//初始化表单
+		var form = new mini.Form("#updateform");
+		//修改
+		function update() {
+			var f = new mini.Form("#updateform");
+			f.validate();
+			if(f.isValid()){
+				var data = f.getData("yyyy-MM-dd");
+				var jsonString = mini.encode(data);
+				$.ajax({
+					url : "/StudentManage/StuMessManagerServlet?method=update",
+					type : "post",
+					data:data,
+					dataType : "json",
+					success : function(text) {
+						if(text.message){
+							mini.alert(text.data);
+							CloseWindow("cancel");
+						}else{
+							mini.alert(text.data);
+						}
+					}
+				})
+			}else{
+				mini.alert("请完善表单");
+			}
+		}
+		//限制日期
+		function onDrawDate(e){
+			var date=e.date;
+			var d=new Date();
+			if(date.getTime()>d.getTime()){
+				e.allowSelect = false;
+			}
+		}
+		//标准方法接口定义
+		function SetData(data) {
+			if (data.action == "edit") {
+				//跨页面传递的数据对象，克隆后才可以安全使用
+				data = mini.clone(data);
+				$.ajax({
+					url : "/StudentManage/StuMessManagerServlet?method=findById&stuid=" + data.id,
+					cache : false,
+					success : function(text) {
+						var o = mini.decode(text);
+						var d=new Date(o.data.adddate);
+						var date=mini.formatDate(d,"yyyy-MM-dd");
+						o.data.adddate=date;
+						form.setData(o.data);
+					}
+				});
+			}
+		}
+		function GetData() {
+			var o = form.getData();
+			return o;
+		}
+		function CloseWindow(action) {
+			if (action == "close" && form.isChanged()) {
+				if (confirm("数据被修改了，是否先保存？")) {
+					return false;
+				}
+			}
+			if (window.CloseOwnerWindow)
+				return window.CloseOwnerWindow(action);
+			else
+				window.close();
+		}
+		function onOk(e) {
+			SaveData();
+		}
+		function onCancel(e) {
+			CloseWindow("cancel");
+		}
+	</script>
+</body>
+</html>

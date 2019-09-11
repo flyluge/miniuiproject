@@ -1,0 +1,5 @@
+[
+    {"id": "pmenu", "text": "操作"},        
+    {"id": "menu1", "text": "餐桌信息管理","pid":"pmenu","url":"atablemanager/tablelist.html"},        
+    {"id": "menu2", "text": "预约信息管理","pid":"pmenu","url":"areservemanager/reservelist.html"}
+]

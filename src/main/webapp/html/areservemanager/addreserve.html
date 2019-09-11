@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>添加预约信息</title>
+<script src="../../scripts/boot.js" type="text/javascript"></script>
+</head>
+<style type="text/css">
+html, body {
+	padding: 0;
+	margin: 0;
+	border: 0;
+	height: 100%;
+	overflow: hidden;
+}
+</style>
+</head>
+<body>
+	<form id="addform" method="post">
+		<div style="padding-bottom: 20px;"></div>
+		<div style="padding: 15px;">
+			<table style="width: 100%;">
+				<tr>
+					<td style="width: 80px">用餐编号</td>
+					<td colspan="3" style="width: 250px">
+						<input style="width: 250px" name="reserveno" class="mini-textbox"
+							required="true" readonly="readonly"></input>
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 80px">用餐开始时间:</td>
+					<td>
+						<input name="starttime" class="mini-datepicker" style="width: 150px;"
+							format="yyyy-MM-dd H:mm" timeFormat="H:mm" showTime="true"
+							showOkButton="false" allowinput=false showClearButton="false"
+							required="true" />
+					</td>
+					<td style="width: 80px">用餐结束时间:</td>
+					<td>
+						<input name="endtime" class="mini-datepicker" style="width: 150px;"
+							format="yyyy-MM-dd H:mm" allowinput=false timeFormat="H:mm"
+							showTime="true" showOkButton="false" showClearButton="false"
+							required="true" />
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 80px">用餐人数：</td>
+					<td style="width: 150px">
+						<input name="peoplenum" class="mini-spinner" value="1" minValue="1"
+							maxValue="6" increment="1" onvaluechanged="changetable" required="required"></input>
+					</td>
+					<td style="width: 80px">餐桌：</td>
+					<td style="width: 150px">
+						<input name="tableno" class="mini-combobox" required="true"
+							emptyText="请先输入用餐人数"></input>
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 80px">状态：</td>
+					<td style="width: 150px">
+						<input name="reservestatus" class="mini-combobox"
+							url="data/status.json" value="0" readonly="readonly"
+							textField="text" valueField="id" required="true"></input>
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 80px">备注:</td>
+					<td colspan="3">
+						<input name="note" class="mini-textarea" emptyText="请输入备注信息"
+							style="width: 440px"></input>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div style="text-align: center; padding: 10px;">
+			<a class="mini-button" onclick="add"
+				style="width: 60px; margin-right: 20px;">确定</a>
+			<a class="mini-button" onclick="onCancel" style="width: 60px;">取消</a>
+		</div>
+	</form>
+	<script type="text/javascript" src="js/addreserve.js"></script>
+</body>
+</html>

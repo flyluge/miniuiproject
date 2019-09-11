@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>学生信息列表</title>
+<script src="../../scripts/boot.js" type="text/javascript"></script>
+<script src="../../scripts/mustache.js" type="text/javascript"></script>
+<style type="text/css">
+	body {
+		width: 100%;
+		height: 100%;
+		padding: 0;
+		margin: 0;
+	}
+</style>
+</head>
+<body>
+	<div style="width: 100%;">
+		<div class="mini-toolbar" style="border-bottom: 0; padding: 0px;">
+			<form id="search_form" class="mini-form">
+				<table style="width: 100%;">
+					<tr>
+						<td style="width: 100%;"><a class="mini-button"
+							iconCls="icon-add" onclick="add()">增加</a> <a class="mini-button"
+							iconCls="icon-edit" onclick="edit()">编辑</a> <a
+							class="mini-button" iconCls="icon-remove" onclick="remove()">删除</a>
+						</td>
+						<td><input id="profession" class="mini-combobox"
+							style="width: 150px;" textField="text" valueField="id"
+							url="data/profession.json" emptyText="请选择专业" showNullItem="true"
+							allowInput="false" /></td>
+						<td style="white-space: nowrap;"><input id="key"
+							class="mini-textbox" emptyText="请输入姓名" style="width: 150px;"
+							onenter="onKeyEnter" /> <a class="mini-button" onclick="search()">查询</a>
+						</td>
+					</tr>
+				</table>
+			</form>
+		</div>
+	</div>
+	<div id="datagrid1" class="mini-datagrid"
+		style="width: 100%; height: 90%;" allowResize="false"
+		url="/StudentManage/StuMessManagerServlet?method=findStuMessList" idField="id"
+		multiSelect="true" sortField="stuid" sortOrder="asc"
+		sizeList="[5,8,13]" pageSize=8 allowAlternating="true"
+		allowCellWrap="true" allowResizeColumn="false" allowUnselect="true"
+		showEmptyText="true" emptyText="数据为空" showSummaryRow="true"
+		ondrawsummarycell="onDrawSummaryCell">
+		<!-- allowCellWrap:允许单元格换行 allowResizeColumn:允许列拖拽长度 allowUnselect允许反选
+        showEmptyText:数据为空时显示提示文本 emptyText:数据为空时的提示文本-->
+		<div property="columns">
+			<div type="indexcolumn">序号</div>
+			<div type="checkcolumn"></div>
+			<div field="stuname" headerAlign="center" align="center"
+				allowSort="true">姓名</div>
+			<div field="sex" headerAlign="center" align="center"
+				renderer="changetosex" style="width: 100%" allowSort="true">性别</div>
+			<div field="profession" headerAlign="center" align="center"
+				renderer="changetoprofession" allowSort="true">专业</div>
+			<div field="adddate" headerAlign="center" align="center"
+				renderer="changetoadddate" dateFormat="yyyy-MM-dd" allowSort="true" allowInput="false">入学日期</div>
+			<div field="idnum" headerAlign="center" align="center"
+				allowSort="true" renderer="changeColor">年龄</div>
+			<div field="aaa" headerAlign="center" align="center" allowSort="false"
+				renderer="updateAnddelete">操作</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		mini.parse();
+		var grid = mini.get("datagrid1");
+		grid.load();
+		//添加一条记录
+		function add() {
+			mini.open({
+				targetWindow : window,
+				url : "addandupdatestumess.html",
+				title : "新增学生记录",
+				width : 600,
+				height : 350,
+				allowResize : false,
+				onload : function() {
+					var iframe = this.getIFrameEl();
+					var data = {
+						action : "new"
+					};
+					iframe.contentWindow.SetData(data);
+				},
+				ondestroy : function(action) {
+					grid.reload();
+				}
+			});
+		}
+		//选中行修改
+		function edit() {
+			var row = grid.getSelected();
+			if (row) {
+				openEditWindow(row.stuid);
+			} else {
+				mini.alert("请选中一条记录");
+			}
+		}
+		//打开编辑窗口 修改单条数据
+		function openEditWindow(id) {
+			mini.open({
+				targetWindow : window,
+				url : "updatestu.html",
+				title : "修改学生记录",
+				width : 600,
+				height : 300,
+				allowResize : false,
+				onload : function() {
+					var iframe = this.getIFrameEl();
+					var data = {
+						action : "edit",
+						id : id
+					};
+					iframe.contentWindow.SetData(data);
+				},
+				ondestroy : function(action) {
+					grid.reload();
+				}
+			});
+		}
+		//条件查询
+		function search() {
+			grid.load({
+				stuname : mini.get("key").getValue(),
+				profession : mini.get("profession").getValue()
+			});
+		}
+		//删除多条数据
+		function remove() {
+			var rows = grid.getSelecteds();
+			if (rows.length > 0) {
+				mini.confirm("确定删除选中记录？","",function(action){
+					if(action=="ok"){
+						var ids = [];
+						for (var i = 0; i< rows.length; i++) {
+							var r = rows[i];
+							ids.push(r.stuid);
+						}
+						var id = ids.join(',');
+						grid.loading("操作中，请稍后......");
+						deleteById(id);
+					}
+				})
+			} else {
+				mini.alert("请选中一条记录");
+			}
+		}
+		//删除单条数据
+		function removeOne(id) {
+			mini.confirm("确定删除该条记录吗?","",function(action){
+				if(action=="ok"){
+					deleteById(id);
+				}
+			})
+		}
+		//通过id删除数据
+		function deleteById(id) {
+			$.ajax({
+						url : "/StudentManage/StuMessManagerServlet?method=deleteById&stuid="
+								+ id,
+						success : function(text) {
+							grid.reload();
+						},
+						error : function() {
+						}
+					});
+		}
+		//回车效果
+		function onKeyEnter(e) {
+			search();
+		}
+		//转换日期
+		function changetoadddate(e){
+			var date=new Date(e.value);
+			return mini.formatDate ( date, "yyyy-MM-dd" );
+		}
+		//性别
+		function changetosex(e) {
+			switch (e.value) {
+			case 1:
+				return "男";
+			case 0:
+				return "女";
+			}
+		}
+		//专业
+		function changetoprofession(e) {
+			switch (e.value) {
+			case 1:
+				return "计算机控制";
+			case 2:
+				return "网络安全";
+			case 3:
+				return "计算机应用";
+			}
+		}
+		//根据借阅次数修改颜色
+		function changeColor(e) {
+			if (e.value > 10) {
+				e.cellStyle = "color:red";
+			} else {
+				e.cellStyle = "color:green";
+			}
+			return e.value;
+		}
+		//更新和删除按钮
+		function updateAnddelete(e) {
+			var temp = $("#addanddeletebutton").html();
+			var items = Mustache.render(temp, {
+				id : e.row.stuid
+			});
+			return items;
+		}
+		//汇总行 
+		function onDrawSummaryCell(e) {
+			//var s="总工资: 100$";
+			var s = e.result.message;
+			if (e.field == "count")
+				e.cellHtml = "是否查询到:" + s;
+		}
+	</script>
+	<!-- 创建一个模板 -->
+	<script type="text/x-mustache" id="addanddeletebutton">
+		<a class="mini-button" onclick="removeOne('{{id}}')">删除</a>
+		<a class="mini-button" onclick="openEditWindow('{{id}}')">修改</a>
+	</script>
+</body>
+</html>

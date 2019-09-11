@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>添加餐桌</title>
+<script src="../../scripts/boot.js" type="text/javascript"></script>
+</head>
+<style type="text/css">
+html, body {
+	padding: 0;
+	margin: 0;
+	border: 0;
+	height: 100%;
+	overflow: hidden;
+}
+</style>
+</head>
+<body>
+	<form id="addform" method="post">
+		<div style="padding-bottom: 20px;"></div>
+		<div style="padding: 15px;">
+			<input style="width: 250px" name="stuid" class="mini-hidden"
+				required="true">
+			<table style="width: 100%;">
+				<tr>
+					<td style="width: 80px">餐桌类型：</td>
+					<td style="width: 150px">
+						<input name="holdnum" class="mini-combobox" url="data/holdnum.json"
+							valueField="id" textField="text" required="true" value="2"
+							onvaluechanged="getid"></input>
+					</td>
+					<td style="width: 80px">餐桌编号</td>
+					<td style="width: 150px">
+						<input name="tableno" class="mini-textbox" required="true"
+							readonly="readonly" emptyText="餐桌编号"></input>
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 80px">是否可用：</td>
+					<td style="width: 150px">
+						<input name="isuse" class="mini-radiobuttonlist"
+							url="data/isuse.json" valueField="id" textField="text"
+							required="true" value="0" readonly="readonly"></input>
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 80px">备注:</td>
+					<td colspan="3">
+						<input name="notes" class="mini-textarea" emptyText="请输入其他说明"
+							style="width: 440px"></input>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div style="text-align: center; padding: 10px;">
+			<a class="mini-button" onclick="add"
+				style="width: 60px; margin-right: 20px;">确定</a>
+			<a class="mini-button" onclick="onCancel" style="width: 60px;">取消</a>
+		</div>
+	</form>
+</body>
+<script type="text/javascript" src="js/addtable.js"></script>
+</html>

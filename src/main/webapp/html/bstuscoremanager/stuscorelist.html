@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>学生成绩列表</title>
+<script src="../../scripts/boot.js" type="text/javascript"></script>
+<script src="../../scripts/mustache.js" type="text/javascript"></script>
+<style type="text/css">
+	body {
+		width: 100%;
+		height: 100%;
+		padding: 0;
+		margin: 0;
+	}
+</style>
+</head>
+<body>
+	<div style="width: 100%;">
+		<div class="mini-toolbar" style="border-bottom: 0; padding: 0px;">
+			<form id="search_form" class="mini-form">
+				<input style="width:250px" name="markid"
+						class="mini-hidden">
+				<input style="width:250px" name="stuid"
+						class="mini-hidden">
+				<table style="width: 100%;">
+					<tr>
+						<td style="width: 100%;"><a class="mini-button"
+							iconCls="icon-add" onclick="add()">增加</a> <a class="mini-button"
+							iconCls="icon-edit" onclick="edit()">编辑</a> <a
+							class="mini-button" iconCls="icon-remove" onclick="remove()">删除</a>
+						</td>
+						<td><input id="predate" class="mini-datepicker"
+							emptyText="请输入初始日期" format="yyyy-MM-dd" allowInput="false" /></td>
+						<td><input id="lastdate" class="mini-datepicker"
+							emptyText="请输入截止日期" format="yyyy-MM-dd" allowInput="false" /></td>
+						<td style="white-space: nowrap;"><input id="stuname"
+							class="mini-textbox" emptyText="请输入图书名称" style="width: 150px;"
+							onenter="onKeyEnter" /> <a class="mini-button" onclick="search()">查询</a>
+						</td>
+					</tr>
+				</table>
+			</form>
+		</div>
+	</div>
+	<div id="datagrid1" class="mini-datagrid"
+		style="width: 100%; height: 90%;" allowResize="false"
+		url="/StudentManage/StuMarkServlet?method=findStuMarkList" idField="id"
+		multiSelect="true" sortField="adddate" sortOrder="desc"
+		sizeList="[5,8,13]" pageSize=8 allowAlternating="true"
+		allowCellWrap="true" allowResizeColumn="false" allowUnselect="true"
+		showEmptyText="true" emptyText="数据为空" showSummaryRow="true"
+		ondrawsummarycell="onDrawSummaryCell">
+		<!-- allowCellWrap:允许单元格换行 allowResizeColumn:允许列拖拽长度 allowUnselect允许反选
+        showEmptyText:数据为空时显示提示文本 emptyText:数据为空时的提示文本-->
+		<div property="columns">
+			<div type="indexcolumn">序号</div>
+			<div type="checkcolumn"></div>
+			<div field="studentinfo.stuname" headerAlign="center" align="center"
+				allowSort="true">学生名称</div>
+			<div field="coursename" headerAlign="center" align="center"
+				style="width: 100%" allowSort="true">课程名称</div>
+			<div field="basescore" headerAlign="center" align="center"
+				 allowSort="true">平时成绩</div>
+			<div field="testscore" headerAlign="center" align="center"
+				 allowSort="true">考核成绩</div>
+			<div field="finalscore" headerAlign="center" align="center"
+				 allowSort="true">最终成绩</div>
+			<div field="note" headerAlign="center" align="center"
+				allowSort="true">其他说明</div>
+			<div field="aaa" headerAlign="center" align="center" allowSort="false"
+				renderer="updateAnddelete">操作</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		mini.parse();
+		var grid = mini.get("datagrid1");
+		grid.load();
+		//添加一条记录
+		function add() {
+			mini.open({
+				targetWindow : window,
+				url : "addstuscore.html",
+				title : "新增学生成绩信息",
+				width : 600,
+				height : 380,
+				allowResize : false,
+				onload : function() {
+					var iframe = this.getIFrameEl();
+					var data = {
+						action : "new"
+					};
+					iframe.contentWindow.SetData(data);
+				},
+				ondestroy : function(action) {
+					grid.reload();
+				}
+			});
+		}
+		//选中行修改
+		function edit() {
+			var row = grid.getSelected();
+			if (row) {
+				openEditWindow(row.bookguid);
+			} else {
+				mini.alert("请选中一条记录");
+			}
+		}
+		//打开编辑窗口 修改单条数据
+		function openEditWindow(id) {
+			mini.open({
+				targetWindow : window,
+				url : "updatebook.html",
+				title : "修改图书",
+				width : 600,
+				height : 280,
+				allowResize : false,
+				onload : function() {
+					var iframe = this.getIFrameEl();
+					var data = {
+						action : "edit",
+						id : id
+					};
+					iframe.contentWindow.SetData(data);
+				},
+				ondestroy : function(action) {
+					grid.reload();
+				}
+			});
+		}
+		//删除多条数据
+		function remove() {
+			var rows = grid.getSelecteds();
+			if (rows.length > 0) {
+				mini.confirm("确定删除选中记录？","",function(action){
+					if(action=="ok"){
+						var ids = [];
+						for (var i = 0, l = rows.length; i < l; i++) {
+							var r = rows[i];
+							ids.push(r.markid);
+						}
+						var id = ids.join(',');
+						grid.loading("操作中，请稍后......");
+						deleteById(id);
+					}
+				})
+			} else {
+				mini.alert("请选中一条记录");
+			}
+		}
+		//删除单条数据
+		function removeOne(id) {
+			mini.confirm("确定删除该条记录吗?","",function(action){
+				if(action=="ok"){
+					deleteById(id);
+				}
+			})
+		}
+		//通过id删除数据
+		function deleteById(id) {
+			$.ajax({
+						url : "/StudentManage/StuMarkServlet?method=deleteById&markid="
+								+ id,
+						success : function(text) {
+							grid.reload();
+						},
+						error : function() {
+						}
+					});
+		}
+		//条件查询
+		function search() {
+			var predate = mini.formatDate(mini.get("predate").getValue(),
+					"yyyy-MM-dd");
+			var lastdate = mini.formatDate(mini.get("lastdate").getValue(),
+					"yyyy-MM-dd");
+			//判断日期
+			if (predate != null && lastdate != null) {
+				if (predate > lastdate) {
+					mini.alert("初始日期不能大于截止日期!");
+					return;
+				}
+			}
+			grid.load({
+				predate : predate,
+				lastdate : lastdate,
+				stuname : mini.get("stuname").getValue()
+			});
+		}
+		//回车效果
+		function onKeyEnter(e) {
+			search();
+		}
+		//更新和删除按钮
+		function updateAnddelete(e) {
+			var temp = $("#addanddeletebutton").html();
+			var items = Mustache.render(temp, {
+				id : e.row.markid
+			});
+			return items;
+		}
+		//汇总行 
+		function onDrawSummaryCell(e) {
+			//var s="总工资: 100$";
+			var s = e.result.message;
+			if (e.field == "count")
+				e.cellHtml = "是否查询到:" + s;
+		}
+	</script>
+	<!-- 创建一个模板 -->
+	<script type="text/x-mustache" id="addanddeletebutton">
+		<a class="mini-button" iconCls="icon-remove" onclick="removeOne('{{id}}')">删除</a>
+	</script>
+</body>
+</html>

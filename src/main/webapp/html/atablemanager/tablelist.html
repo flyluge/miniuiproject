@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>餐桌信息列表</title>
+<script src="../../scripts/boot.js" type="text/javascript"></script>
+<script src="../../scripts/mustache.js" type="text/javascript"></script>
+<style type="text/css">
+body {
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	margin: 0;
+}
+</style>
+</head>
+<body>
+	<div style="width: 100%;">
+		<div class="mini-toolbar" style="border-bottom: 0; padding: 0px;">
+			<form id="search_form" class="mini-form">
+				<table style="width: 100%;">
+					<tr>
+						<td style="width: 100%;">
+							<a class="mini-button" iconCls="icon-add" onclick="add()">增加</a>
+							<a class="mini-button" iconCls="icon-remove" onclick="remove()">删除</a>
+						</td>
+						<td>
+							<input id="holdnum" class="mini-combobox" style="width: 150px;"
+								textField="text" valueField="id" url="data/holdnum.json"
+								emptyText="请选择餐桌类型" showNullItem="true" allowInput="false" />
+						</td>
+						<td>
+							<input id="isuse" class="mini-combobox" style="width: 150px;"
+								textField="text" valueField="id" url="data/isuse.json"
+								emptyText="是否使用" showNullItem="true" allowInput="false" />
+						</td>
+						<td style="white-space: nowrap;">
+							<a class="mini-button" onclick="search()">查询</a>
+						</td>
+					</tr>
+				</table>
+			</form>
+		</div>
+	</div>
+	<div id="datagrid1" class="mini-datagrid"
+		style="width: 100%; height: 90%;" allowResize="false"
+		url="/project/TableManagerServlet?method=getTableList" idField="tableno"
+		multiSelect="true" sortField="tableno" sortOrder="asc"
+		sizeList="[5,8,13]" pageSize=8 allowAlternating="true"
+		allowCellWrap="true" allowResizeColumn="false" allowUnselect="true"
+		showEmptyText="true" emptyText="数据为空" showSummaryRow="true"
+		ondrawsummarycell="onDrawSummaryCell">
+		<!-- allowCellWrap:允许单元格换行 allowResizeColumn:允许列拖拽长度 allowUnselect允许反选
+        showEmptyText:数据为空时显示提示文本 emptyText:数据为空时的提示文本-->
+		<div property="columns">
+			<div type="indexcolumn">序号</div>
+			<div type="checkcolumn"></div>
+			<div field="tableno" headerAlign="center" align="center"
+				allowSort="true">餐桌编号</div>
+			<div field="holdnum" headerAlign="center" align="center"
+				renderer="changetoholdnum" allowSort="true">餐桌类型</div>
+			<div field="isuse" headerAlign="center" align="center" allowSort="true"
+				renderer="changetoisuse">是否被使用</div>
+			<div field="notes" headerAlign="center" align="center" allowSort="true">备注</div>
+			<div field="aaa" headerAlign="center" align="center" allowSort="false"
+				renderer="updateAnddelete">操作</div>
+		</div>
+	</div>
+	<!-- 创建一个模板 -->
+	<script type="text/x-mustache" id="addanddeletebutton">
+		<a class="mini-button" onclick="removeOne('{{id}}')">删除</a>
+	</script>
+</body>
+<script src="js/tablelist.js" type="text/javascript"></script>
+</html>
