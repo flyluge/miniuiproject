@@ -18,7 +18,7 @@ public interface BaseDao<T> {
 	 */
 	boolean add(T t);
 	/**
-	 *  添加一条数据并返回主键
+	 * 添加一条数据并返回主键
 	 * @param t 插入的数据
 	 * @return null:插入失败  或者返回插入后的主键
 	 * 注意:只对自增长id有效
