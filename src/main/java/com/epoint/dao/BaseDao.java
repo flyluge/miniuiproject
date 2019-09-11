@@ -94,7 +94,7 @@ public interface BaseDao<T> {
 	 *@author: luge
 	 *@date: 2019年9月11日 上午9:36:01
 	 *@param sql sql语句
-	 *@param param 查询条件
+	 *@param list 查询条件
 	 *@return 查询结果封装List<Bean>
 	 */
 	List<T> findAllBySql2(String sql,List<Object> list);

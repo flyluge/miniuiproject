@@ -139,7 +139,6 @@ public class ReserveMngService{
 	 *@date: 2019年9月10日 上午10:05:57
 	 *@param mngService
 	 *@return
-	 *@throws: 
 	 */ 
 	public Reserveinfo findById(String reserveno) {
 		Reserveinfo r = reserveMngDao.findById(reserveno);

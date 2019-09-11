@@ -5,7 +5,7 @@
  * date: 2019年9月9日上午10:25:09 
  * copyright(c)  LUGE
  */
-package com.epoint.controller;
+package com.epoint.action.reservemanager;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +17,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.converters.DateConverter;
 
+import com.epoint.action.BaseServlet;
 import com.epoint.domain.Reserveinfo;
 import com.epoint.domain.Tableinfo;
 import com.epoint.service.ReserveMngService;

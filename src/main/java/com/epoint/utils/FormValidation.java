@@ -54,14 +54,6 @@ public class FormValidation {
 	 * @param obj 需要验证的对象数组
 	 * @return true:全部非空  false:存在空值或空串
 	 */
-	public static boolean isNull(Object... obj) {
-		for (Object object : obj) {
-			if(object==null||object.toString().trim().length()==0) {
-				return false;
-			}
-		}
-		return true;
-	}
 	public static boolean verifyNull(Object... obj) {
 		for (Object object : obj) {
 			if(object==null||object.toString().trim().length()==0) {
